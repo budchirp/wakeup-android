@@ -1,5 +1,6 @@
 package dev.cankolay.wakeup.presentation.service
 
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,6 +21,10 @@ class WakeupForegroundService : NotificationService() {
     companion object {
         const val CHANNEL_ID = "WakeupForegroundServiceChannel"
         const val NOTIFICATION_ID = 1
+
+        fun start(context: Context) {
+            context.startForegroundService(Intent(context, WakeupForegroundService::class.java))
+        }
     }
 
     override val channel = CHANNEL_ID
@@ -28,6 +33,8 @@ class WakeupForegroundService : NotificationService() {
 
     override fun onCreate() {
         super.onCreate()
+
+        connect()
 
         observe()
     }
@@ -52,9 +59,7 @@ class WakeupForegroundService : NotificationService() {
     override fun onDestroy() {
         super.onDestroy()
 
-        serviceScope.launch {
-            wakeupService.disconnect()
-        }
+        disconnect()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -71,17 +76,9 @@ class WakeupForegroundService : NotificationService() {
 
     private fun handle(intent: Intent?) {
         when (intent?.action) {
-            ServiceActions.ACTION_CONNECT -> {
-                serviceScope.launch {
-                    wakeupService.connect()
-                }
-            }
+            ServiceActions.ACTION_CONNECT -> connect()
 
-            ServiceActions.ACTION_DISCONNECT -> {
-                serviceScope.launch {
-                    wakeupService.disconnect()
-                }
-            }
+            ServiceActions.ACTION_DISCONNECT -> disconnect()
 
             ServiceActions.ACTION_STOP_ALARM -> {
                 wakeupService.stop()
@@ -90,12 +87,22 @@ class WakeupForegroundService : NotificationService() {
             }
 
             ServiceActions.ACTION_CLOSE -> {
-                serviceScope.launch {
-                    wakeupService.disconnect()
-                }
+                disconnect()
 
                 stopSelf()
             }
+        }
+    }
+
+    private fun connect() {
+        serviceScope.launch {
+            wakeupService.connect()
+        }
+    }
+
+    private fun disconnect() {
+        serviceScope.launch {
+            wakeupService.disconnect()
         }
     }
 

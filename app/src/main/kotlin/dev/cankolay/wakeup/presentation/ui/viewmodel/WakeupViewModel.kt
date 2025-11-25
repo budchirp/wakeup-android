@@ -35,15 +35,15 @@ class WakeupViewModel @Inject constructor(
     }
 
     fun disconnect() {
-        context.startForegroundService(intent(ServiceActions.ACTION_DISCONNECT))
+        context.startForegroundService(intent(action = ServiceActions.ACTION_DISCONNECT))
     }
 
     fun connect() {
-        context.startForegroundService(intent(ServiceActions.ACTION_CONNECT))
+        context.startForegroundService(intent(action = ServiceActions.ACTION_CONNECT))
     }
 
     fun stop() {
-        context.startForegroundService(intent(ServiceActions.ACTION_STOP_ALARM))
+        context.startForegroundService(intent(action = ServiceActions.ACTION_STOP_ALARM))
 
         viewModelScope.launch {
             wakeupService.stop()
