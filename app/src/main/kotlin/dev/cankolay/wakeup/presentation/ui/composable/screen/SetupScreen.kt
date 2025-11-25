@@ -17,14 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.cankolay.wakeup.presentation.ui.composable.AppLayout
 
-private const val DEFAULT_URL = "ws://192.168.1.8:8080/ws"
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupScreen(
     onConnect: (String) -> Unit
 ) {
-    var url by remember { mutableStateOf(value = DEFAULT_URL) }
+    var url by remember { mutableStateOf(value = "") }
 
     AppLayout(
         title = {
