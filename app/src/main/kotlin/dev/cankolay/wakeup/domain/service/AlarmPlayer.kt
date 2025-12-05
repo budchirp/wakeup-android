@@ -91,13 +91,17 @@ class AlarmPlayer @Inject constructor(
     }
 
     private fun startVibration(intensity: VibrationIntensity) {
+        if (intensity == VibrationIntensity.OFF) return
+
         val pattern = when (intensity) {
+            VibrationIntensity.OFF -> return
             VibrationIntensity.LOW -> longArrayOf(0, 500, 1500)
             VibrationIntensity.MEDIUM -> longArrayOf(0, 800, 800)
             VibrationIntensity.HIGH -> longArrayOf(0, 1000, 500)
         }
 
         val amplitudes = when (intensity) {
+            VibrationIntensity.OFF -> return
             VibrationIntensity.LOW -> intArrayOf(0, 80, 0)
             VibrationIntensity.MEDIUM -> intArrayOf(0, 160, 0)
             VibrationIntensity.HIGH -> intArrayOf(0, 255, 0)
