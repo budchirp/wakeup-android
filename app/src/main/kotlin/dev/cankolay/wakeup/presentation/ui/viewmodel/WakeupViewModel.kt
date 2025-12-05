@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.cankolay.wakeup.domain.model.VibrationIntensity
 import dev.cankolay.wakeup.domain.service.WakeupService
 import dev.cankolay.wakeup.presentation.service.ServiceActions
 import dev.cankolay.wakeup.presentation.service.WakeupForegroundService
@@ -20,18 +21,55 @@ class WakeupViewModel @Inject constructor(
 
     val status = wakeupService.status
     val ringing = wakeupService.ringing
+    val testing = wakeupService.testing
 
+    val isSetupDone = wakeupService.isSetupDone
     val url = wakeupService.url
+    val volume = wakeupService.volume
+    val vibrationIntensity = wakeupService.intensity
+    val alarmDuration = wakeupService.duration
 
-    fun saveUrl(value: String) {
+    fun completeSetup(url: String) {
+        val trimmed = url.trim()
+        if (trimmed.isBlank()) return
+
+        viewModelScope.launch {
+            wakeupService.setUrl(trimmed)
+            wakeupService.setSetupDone(true)
+        }
+
+        connect()
+    }
+
+    fun updateUrl(value: String) {
         val trimmed = value.trim()
-        if (trimmed.isBlank() || url.value != null) return
+        if (trimmed.isBlank()) return
 
         viewModelScope.launch {
             wakeupService.setUrl(trimmed)
         }
+    }
 
-        connect()
+    fun updateVolume(value: Float) {
+        viewModelScope.launch {
+            wakeupService.setVolume(value)
+        }
+    }
+
+    fun updateVibrationIntensity(intensity: VibrationIntensity) {
+        viewModelScope.launch {
+            wakeupService.setVibrationIntensity(intensity)
+        }
+    }
+
+    fun updateAlarmDuration(seconds: Int) {
+        viewModelScope.launch {
+            wakeupService.setAlarmDuration(seconds)
+        }
+    }
+
+    fun test() {
+        wakeupService.test()
     }
 
     fun disconnect() {
@@ -56,4 +94,3 @@ class WakeupViewModel @Inject constructor(
         }
     }
 }
-

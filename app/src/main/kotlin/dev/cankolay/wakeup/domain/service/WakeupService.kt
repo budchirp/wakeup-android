@@ -1,5 +1,6 @@
 package dev.cankolay.wakeup.domain.service
 
+import dev.cankolay.wakeup.domain.model.VibrationIntensity
 import dev.cankolay.wakeup.domain.repository.SettingsRepository
 import dev.cankolay.wakeup.domain.repository.WakeupRepository
 import kotlinx.coroutines.CoroutineScope
@@ -21,11 +22,32 @@ class WakeupService @Inject constructor(
 
     val status = repository.status
     val ringing = MutableStateFlow(value = false)
+    val testing = MutableStateFlow(value = false)
 
+    val isSetupDone = settingsRepository.isSetupDone
     val url = settingsRepository.url
+    val volume = settingsRepository.volume
+    val intensity = settingsRepository.vibrationIntensity
+    val duration = settingsRepository.alarmDuration
+
+    suspend fun setSetupDone(done: Boolean) {
+        settingsRepository.setSetupDone(done)
+    }
 
     suspend fun setUrl(url: String) {
         settingsRepository.setUrl(url)
+    }
+
+    suspend fun setVolume(volume: Float) {
+        settingsRepository.setVolume(volume)
+    }
+
+    suspend fun setVibrationIntensity(intensity: VibrationIntensity) {
+        settingsRepository.setVibrationIntensity(intensity)
+    }
+
+    suspend fun setAlarmDuration(seconds: Int) {
+        settingsRepository.setAlarmDuration(seconds)
     }
 
     suspend fun connect() {
@@ -47,9 +69,36 @@ class WakeupService @Inject constructor(
         player.stop()
     }
 
+    fun test() {
+        if (testing.value) {
+            stopTest()
+            return
+        }
+
+        testing.value = true
+        player.play(
+            volume = volume.value,
+            intensity = intensity.value,
+            duration = -1,
+            onEnd = { stopTest() }
+        )
+    }
+
+    private fun stopTest() {
+        if (!testing.value) return
+
+        testing.value = false
+        player.stop()
+    }
+
     private fun play() {
         ringing.value = true
-        player.play()
+        player.play(
+            volume = volume.value,
+            intensity = intensity.value,
+            duration = duration.value,
+            onEnd = { stop() }
+        )
     }
 
     init {
@@ -60,5 +109,3 @@ class WakeupService @Inject constructor(
         }
     }
 }
-
-

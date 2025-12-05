@@ -6,6 +6,8 @@ import android.os.IBinder
 import dagger.hilt.android.AndroidEntryPoint
 import dev.cankolay.wakeup.domain.service.WakeupService
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,7 +36,10 @@ class WakeupForegroundService : NotificationService() {
     override fun onCreate() {
         super.onCreate()
 
-        connect()
+        serviceScope.launch {
+            wakeupService.url.filterNotNull().first()
+            wakeupService.connect()
+        }
 
         observe()
     }
@@ -96,6 +101,8 @@ class WakeupForegroundService : NotificationService() {
 
     private fun connect() {
         serviceScope.launch {
+            // Wait for DataStore to load URL before connecting
+            wakeupService.url.filterNotNull().first()
             wakeupService.connect()
         }
     }
@@ -115,6 +122,12 @@ class WakeupForegroundService : NotificationService() {
 
         serviceScope.launch {
             wakeupService.ringing.collectLatest {
+                refresh()
+            }
+        }
+
+        serviceScope.launch {
+            wakeupService.url.collectLatest {
                 refresh()
             }
         }

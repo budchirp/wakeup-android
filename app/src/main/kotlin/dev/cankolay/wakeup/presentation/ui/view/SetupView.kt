@@ -1,6 +1,7 @@
-package dev.cankolay.wakeup.presentation.ui.composable.screen
+package dev.cankolay.wakeup.presentation.ui.view
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,22 +16,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import dev.cankolay.wakeup.presentation.ui.composable.AppLayout
+import dev.cankolay.wakeup.presentation.ui.composition.LocalNavController
+import dev.cankolay.wakeup.presentation.ui.navigation.Route
+import dev.cankolay.wakeup.presentation.ui.viewmodel.WakeupViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SetupScreen(
-    onConnect: (String) -> Unit
+fun SetupView(
+    viewModel: WakeupViewModel = hiltViewModel()
 ) {
+    val navController = LocalNavController.current
+
     var url by remember { mutableStateOf(value = "") }
 
     AppLayout(
-        title = {
-            Text(text = "Connect to Server")
-        }
+        title = "Connect to Server"
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
             item {
@@ -45,7 +51,12 @@ fun SetupScreen(
 
             item {
                 Button(
-                    onClick = { onConnect(url) },
+                    onClick = {
+                        viewModel.completeSetup(url = url)
+                        navController.navigate(Route.Home) {
+                            popUpTo(Route.Setup) { inclusive = true }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = url.isNotBlank()
                 ) {
@@ -55,4 +66,3 @@ fun SetupScreen(
         }
     }
 }
-

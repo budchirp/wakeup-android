@@ -4,6 +4,8 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.pm.ServiceInfo
+import androidx.core.app.ServiceCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,7 +17,8 @@ abstract class NotificationService : Service() {
     protected abstract val name: String
     protected abstract val id: Int
 
-    protected open val importance: Int = NotificationManager.IMPORTANCE_LOW
+    protected open val importance = NotificationManager.IMPORTANCE_LOW
+    protected open val serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 
     protected val serviceScope = CoroutineScope(context = SupervisorJob() + Dispatchers.IO)
     protected val mainScope = CoroutineScope(context = SupervisorJob() + Dispatchers.Main)
@@ -37,7 +40,12 @@ abstract class NotificationService : Service() {
     }
 
     protected fun start(notification: Notification) {
-        startForeground(id, notification)
+        ServiceCompat.startForeground(
+            this,
+            id,
+            notification,
+            serviceType
+        )
     }
 
     protected fun update(notification: Notification) {
